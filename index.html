@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" type="image/png" href="logo.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>LU&CAZ — Dashboard</title>
+<style>
+:root{
+  --red:#7a1a1a;--red-light:#fdecea;--red-mid:#e8c0c0;
+  --gray:#f5f5f5;--border:#e0e0e0;--text:#1a1a1a;--muted:#888;
+  --radius:12px;--radius-sm:8px;
+  --green:#2d8a4e;--green-bg:#edf7f1;
+  --orange:#b45a00;--orange-bg:#fff3e6;
+  --blue:#1a4d8a;--blue-bg:#edf2fb;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:#f0eded;color:var(--text);min-height:100vh;}
+.top-bar{background:var(--red);color:white;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.top-bar h1{font-size:16px;font-weight:600;}
+.top-bar p{font-size:11px;opacity:0.75;margin-top:2px;}
+.new-btn{background:white;color:var(--red);border:none;border-radius:20px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block;}
+.drive-badge{font-size:11px;color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.15);padding:5px 10px;border-radius:20px;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:0.5px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px;font-size:10px;color:var(--muted);cursor:pointer;border:none;background:none;gap:3px;font-family:inherit;}
+.nav-btn.active{color:var(--red);}
+.nav-icon{font-size:20px;}
+.main{padding:14px;padding-bottom:90px;max-width:480px;margin:0 auto;}
+.card{background:white;border-radius:var(--radius);border:0.5px solid var(--border);padding:14px 16px;margin-bottom:10px;}
+.sec-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;}
+.search-bar{width:100%;padding:9px 12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:white;font-size:13px;font-family:inherit;margin-bottom:12px;}
+.status-tabs{display:flex;gap:6px;margin-bottom:14px;}
+.status-tab{flex:1;padding:8px 4px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;text-align:center;cursor:pointer;border:0.5px solid var(--border);background:white;color:var(--muted);font-family:inherit;}
+.status-tab.on{background:var(--red);color:white;border-color:var(--red);}
+.job-card{background:white;border-radius:var(--radius);border:0.5px solid var(--border);padding:14px 16px;margin-bottom:8px;cursor:pointer;position:relative;overflow:hidden;}
+.job-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;padding-right:28px;}
+.job-name{font-size:14px;font-weight:600;}
+.job-date{font-size:11px;color:var(--muted);white-space:nowrap;margin-left:8px;}
+.job-addr{font-size:12px;color:var(--muted);margin-bottom:7px;}
+.job-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.tag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;}
+.tag-exterior{background:var(--red-light);color:var(--red);}
+.tag-sent{background:#e8f4e8;color:#2d6a2d;}
+.tag-lead{background:var(--orange-bg);color:var(--orange);}
+.tag-followup{background:var(--orange-bg);color:var(--orange);}
+.flag-btn{position:absolute;top:12px;right:12px;background:none;border:none;font-size:18px;cursor:pointer;padding:0;z-index:2;}
+.note-preview{font-size:11px;color:var(--muted);font-style:italic;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.revenue-box{background:white;border-radius:var(--radius);border:0.5px solid var(--border);padding:14px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.revenue-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;}
+.revenue-amount{font-size:22px;font-weight:700;color:var(--green);}
+.client-card{background:white;border-radius:var(--radius);border:0.5px solid var(--border);padding:14px 16px;margin-bottom:8px;cursor:pointer;}
+.client-name{font-size:14px;font-weight:600;margin-bottom:3px;}
+.client-sub{font-size:12px;color:var(--muted);margin-bottom:2px;}
+.client-jobs-count{font-size:11px;color:var(--red);font-weight:600;margin-top:5px;}
+.empty{text-align:center;padding:50px 20px;}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty h3{font-size:15px;font-weight:600;margin-bottom:6px;}
+.empty p{font-size:13px;color:var(--muted);}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;overflow-y:auto;}
+.modal.on{display:block;}
+.modal-inner{background:#f0eded;min-height:100vh;max-width:480px;margin:0 auto;padding-bottom:40px;}
+.modal-hd{background:var(--red);color:white;padding:14px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
+.modal-back{background:none;border:none;color:white;font-size:22px;cursor:pointer;padding:0;line-height:1;}
+.modal-title{font-size:15px;font-weight:600;flex:1;}
+.modal-body{padding:14px;}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.field label{font-size:11px;color:var(--muted);font-weight:500;}
+.field input,.field select,.field textarea{width:100%;font-size:13px;padding:8px 10px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:white;color:var(--text);font-family:inherit;}
+.field textarea{resize:none;line-height:1.5;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.detail-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:0.5px solid var(--border);}
+.detail-row:last-child{border-bottom:none;}
+.detail-row .lbl{color:var(--muted);}
+.detail-row .val{font-weight:500;text-align:right;max-width:65%;}
+.paint-table{width:100%;border-collapse:collapse;font-size:11px;}
+.paint-table th{background:var(--red);color:white;padding:5px 6px;text-align:left;font-size:10px;}
+.paint-table td{padding:5px 6px;border-bottom:0.5px solid var(--border);}
+.paint-table tr:nth-child(even) td{background:var(--gray);}
+.status-select{display:flex;gap:6px;}
+.status-opt{flex:1;padding:8px 4px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;text-align:center;cursor:pointer;border:0.5px solid var(--border);background:white;color:var(--muted);font-family:inherit;}
+.status-opt.sel-active{background:var(--green-bg);color:var(--green);border-color:var(--green);}
+.status-opt.sel-completed{background:var(--blue-bg);color:var(--blue);border-color:var(--blue);}
+.status-opt.sel-rejected{background:var(--gray);color:var(--muted);border-color:#ccc;}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.photo-slot{border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:16px 8px;text-align:center;cursor:pointer;background:var(--gray);}
+.photo-slot.filled{border-style:solid;border-color:var(--red);padding:0;overflow:hidden;}
+.photo-slot img{width:100%;height:100px;object-fit:cover;display:block;}
+.photo-slot-label{font-size:11px;font-weight:600;color:var(--muted);margin-top:5px;}
+.photo-slot.filled .photo-slot-label{padding:4px;background:white;margin-top:0;}
+.photo-icon{font-size:22px;margin-bottom:4px;}
+.cost-input-wrap{margin-bottom:10px;}
+.cost-input-wrap label{font-size:11px;color:var(--muted);font-weight:500;display:block;margin-bottom:4px;}
+.cost-input{width:100%;font-size:18px;font-weight:700;padding:10px 12px;border:1.5px solid var(--red);border-radius:var(--radius-sm);background:white;color:var(--text);font-family:inherit;}
+.cost-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;}
+.cost-table td{padding:8px 10px;border-bottom:0.5px solid var(--border);}
+.cost-table tr:last-child td{border-bottom:none;}
+.cost-table .lbl{color:var(--muted);}
+.cost-table .val{text-align:right;font-weight:500;}
+.cost-table .total-row td{font-weight:700;font-size:14px;background:var(--gray);}
+.cost-table .deposit-row td{color:var(--red);font-weight:600;}
+.btn-primary{width:100%;padding:14px;background:var(--red);color:white;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;}
+.btn-secondary{width:100%;padding:12px;background:white;color:var(--red);border:1.5px solid var(--red);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;}
+.btn-ghost{width:100%;padding:12px;background:white;color:var(--text);border:0.5px solid var(--border);border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:inherit;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;}
+.btn-danger{width:100%;padding:12px;background:white;color:#cc2222;border:1.5px solid #cc2222;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px;}
+.btn-primary:disabled,.btn-secondary:disabled{opacity:0.6;cursor:not-allowed;}
+.sbar{border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;text-align:center;margin-top:8px;}
+.sbar.success{background:var(--green-bg);color:var(--green);}
+.sbar.error{background:var(--red-light);color:var(--red);}
+.sbar.loading{background:var(--gray);color:var(--muted);}
+.client-mini{background:var(--red-light);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px;}
+.client-mini-name{font-size:13px;font-weight:600;color:var(--red);margin-bottom:3px;}
+.client-mini-info{font-size:11px;color:var(--red);opacity:0.8;}
+.client-mini-link{font-size:11px;color:var(--red);font-weight:600;text-decoration:underline;cursor:pointer;margin-top:4px;display:inline-block;}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <img src="logo.png" alt="LU&CAZ" style="height:36px;width:auto;object-fit:contain">
+    <p id="topBarSub" style="font-size:11px;opacity:0.8;margin:0">Dashboard</p>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span class="drive-badge">☁ Drive auto-save</span>
+    <a class="new-btn" href="estimate.html">+ New estimate</a>
+  </div>
+</div>
+
+<div class="main" id="mainContent"></div>
+
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-jobs" onclick="showTab('jobs')"><span class="nav-icon">📋</span>Jobs</button>
+  <button class="nav-btn" id="nav-clients" onclick="showTab('clients')"><span class="nav-icon">👥</span>Clients</button>
+  <button class="nav-btn" id="nav-add" onclick="showTab('add')"><span class="nav-icon">➕</span>Add client</button>
+</div>
+
+<!-- JOB MODAL -->
+<div class="modal" id="jobModal">
+  <div class="modal-inner">
+    <div class="modal-hd">
+      <button class="modal-back" onclick="closeJob()">←</button>
+      <div class="modal-title" id="jobModalTitle">Job</div>
+      <span style="font-size:12px;color:rgba(255,255,255,0.7)" id="jobPropNum"></span>
+    </div>
+    <div class="modal-body" id="jobModalBody"></div>
+  </div>
+</div>
+
+<!-- CLIENT MODAL -->
+<div class="modal" id="clientModal">
+  <div class="modal-inner">
+    <div class="modal-hd">
+      <button class="modal-back" onclick="closeClient()">←</button>
+      <div class="modal-title" id="clientModalTitle">Client</div>
+    </div>
+    <div class="modal-body" id="clientModalBody"></div>
+  </div>
+</div>
+
+<!-- ADD CLIENT MODAL -->
+<div class="modal" id="addModal">
+  <div class="modal-inner">
+    <div class="modal-hd">
+      <button class="modal-back" onclick="closeAdd()">←</button>
+      <div class="modal-title">Add client</div>
+    </div>
+    <div class="modal-body">
+      <div class="card">
+        <div class="sec-label">Contact information</div>
+        <div class="field"><label>Full name *</label><input type="text" id="ac-name" placeholder="Client name"></div>
+        <div class="field"><label>Street address</label><input type="text" id="ac-street" placeholder="123 Main St"></div>
+        <div class="row2">
+          <div class="field"><label>City</label><input type="text" id="ac-city" placeholder="City"></div>
+          <div class="field"><label>State</label><input type="text" id="ac-state" placeholder="NY" maxlength="2" style="text-transform:uppercase"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Zip</label><input type="text" id="ac-zip" placeholder="10562" maxlength="5"></div>
+          <div class="field"><label>Phone</label><input type="tel" id="ac-phone" placeholder="(914) 000-0000"></div>
+        </div>
+        <div class="field"><label>Email</label><input type="email" id="ac-email" placeholder="email@example.com"></div>
+        <div class="field"><label>Notes</label><textarea id="ac-notes" rows="2" placeholder="Any notes..."></textarea></div>
+      </div>
+      <button class="btn-primary" onclick="saveClient()">💾 Save client</button>
+      <div id="acStatus" class="sbar" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhoto(this)">
+
+<script>
+const SERVER = 'https://lucaz-server.onrender.com';
+let currentTab = 'jobs';
+let currentStatus = 'Active';
+let currentJobId = null;
+let currentPhotoSlot = null;
+
+// ── DATA ──
+function getJobs(){ return JSON.parse(localStorage.getItem('lucaz_jobs')||'[]'); }
+function saveJobs(j){ localStorage.setItem('lucaz_jobs', JSON.stringify(j)); }
+function getClients(){ return JSON.parse(localStorage.getItem('lucaz_clients')||'[]'); }
+function saveClients(c){ localStorage.setItem('lucaz_clients', JSON.stringify(c)); }
+
+// ── NAV ──
+function showTab(tab){
+  if(tab==='add'){ document.getElementById('addModal').classList.add('on'); return; }
+  currentTab=tab;
+  ['jobs','clients','add'].forEach(t=>document.getElementById('nav-'+t).classList.toggle('active',t===tab));
+  renderMain();
+}
+function renderMain(){ if(currentTab==='jobs') renderJobs(); else renderClients(); }
+
+// ── JOBS ──
+function renderJobs(){
+  const jobs=getJobs();
+  const counts={Active:jobs.filter(j=>j.status==='Active').length,Completed:jobs.filter(j=>j.status==='Completed').length,Rejected:jobs.filter(j=>j.status==='Rejected').length};
+  const filtered=jobs.filter(j=>j.status===currentStatus);
+  let html=`<input class="search-bar" type="text" placeholder="🔍 Search..." oninput="searchJobs(this.value)">
+  <div class="status-tabs">
+    ${['Active','Completed','Rejected'].map(s=>`<button class="status-tab ${currentStatus===s?'on':''}" onclick="filterJobs('${s}')">${s} <span style="opacity:0.7">${counts[s]}</span></button>`).join('')}
+  </div>`;
+  if(currentStatus==='Completed'){
+    const rev=jobs.filter(j=>j.status==='Completed').reduce((sum,j)=>{
+      const sub=parseFloat(j.subtotal)||0,porta=j.estimate?.portaPotty?200:0,taxable=sub+porta;
+      return sum+taxable+(taxable*0.08375);
+    },0);
+    html+=`<div class="revenue-box"><div><div class="revenue-label">Total revenue</div></div><div class="revenue-amount">${fmt(rev)}</div></div>`;
+  }
+  if(!filtered.length){
+    html+=`<div class="empty"><div class="empty-icon">📋</div><h3>No ${currentStatus.toLowerCase()} jobs</h3><p>${currentStatus==='Active'?'Save an estimate to see it here':'No jobs here yet'}</p></div>`;
+  } else {
+    filtered.forEach(job=>{
+      const E=job.estimate,name=E?.client?.name||'Unknown';
+      const addr=E?.client?`${E.client.street||''},${E.client.city||''}`:'';
+      const date=job.createdAt?new Date(job.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+      const sides=E?.sides?.map(s=>s.label).join(', ')||'';
+      const isLead=!E?.sides?.length;
+      const flagIcon=job.followUp?'⚑':'⚐';
+      const notePreview=job.notes?`<div class="note-preview">${job.notes}</div>`:'';
+      html+=`<div class="job-card" id="jc-${job.id}" data-id="${job.id}">
+        <button class="flag-btn" onclick="event.stopPropagation();toggleFlag('${job.id}')">${flagIcon}</button>
+        <div onclick="openJob('${job.id}')">
+          <div class="job-card-top"><div class="job-name">${name}</div><div class="job-date">${date}</div></div>
+          <div class="job-addr">${addr}</div>
+          <div class="job-tags">
+            ${isLead?'<span class="tag tag-lead">Lead</span>':'<span class="tag tag-exterior">Exterior</span>'}
+            ${sides?`<span class="tag" style="background:var(--gray);color:var(--muted)">${sides}</span>`:''}
+            ${job.proposalGenerated?'<span class="tag tag-sent">✓ Proposal sent</span>':''}
+            ${job.followUp?'<span class="tag tag-followup">⚑ Follow up</span>':''}
+          </div>
+          ${notePreview}
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('mainContent').innerHTML=html;
+  setTimeout(addSwipeListeners,100);
+}
+function filterJobs(s){currentStatus=s;renderJobs();}
+function searchJobs(q){const query=q.toLowerCase();document.querySelectorAll('.job-card').forEach(c=>{c.style.display=c.textContent.toLowerCase().includes(query)?'block':'none';});}
+function toggleFlag(id){const jobs=getJobs(),job=jobs.find(j=>j.id===id);if(job){job.followUp=!job.followUp;saveJobs(jobs);}renderJobs();}
+
+// ── SWIPE ──
+function addSwipeListeners(){
+  document.querySelectorAll('.job-card[data-id]').forEach(card=>{
+    let startX=0,startY=0,isDragging=false;
+    const id=card.dataset.id;
+    card.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;startY=e.touches[0].clientY;isDragging=false;},{passive:true});
+    card.addEventListener('touchmove',e=>{
+      const dx=e.touches[0].clientX-startX,dy=e.touches[0].clientY-startY;
+      if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>10){isDragging=true;card.style.transform=`translateX(${dx*0.4}px)`;card.style.opacity=1-Math.abs(dx)/400;}
+    },{passive:true});
+    card.addEventListener('touchend',e=>{
+      const dx=e.changedTouches[0].clientX-startX;
+      card.style.transform='';card.style.opacity='';
+      if(!isDragging)return;
+      const jobs=getJobs(),job=jobs.find(j=>j.id===id);
+      if(dx>80&&job&&job.status!=='Completed'){
+        const old=job.status;job.status='Completed';saveJobs(jobs);
+        if(job.driveFileId) moveDriveFile(job.driveFileId,old,'Completed',job.estimate?.client?.name);
+        card.style.background='var(--green-bg)';setTimeout(()=>renderJobs(),400);
+      } else if(dx<-80&&job&&job.status!=='Rejected'){
+        const old=job.status;job.status='Rejected';saveJobs(jobs);
+        if(job.driveFileId) moveDriveFile(job.driveFileId,old,'Rejected',job.estimate?.client?.name);
+        card.style.background='var(--red-light)';setTimeout(()=>renderJobs(),400);
+      }
+    },{passive:true});
+  });
+}
+
+// ── OPEN JOB ──
+function openJob(id){
+  currentJobId=id;
+  const jobs=getJobs(),job=jobs.find(j=>j.id===id);
+  if(!job)return;
+  const E=job.estimate;
+  document.getElementById('jobModalTitle').textContent=E?.client?.name||'Job';
+  document.getElementById('jobPropNum').textContent=E?.proposalNum?`#${E.proposalNum}`:'';
+  let html='';
+
+  // Client mini
+  html+=`<div class="client-mini">
+    <div class="client-mini-name">${E?.client?.name||'—'}</div>
+    <div class="client-mini-info">${E?.client?.phone||''} · ${E?.client?.email||''}</div>
+    <div class="client-mini-info">${E?.client?.street||''}, ${E?.client?.city||''} ${E?.client?.state||''}</div>
+    <span class="client-mini-link" onclick="openClientFromJob('${id}')">View full client profile →</span>
+  </div>`;
+
+  // Status
+  html+=`<div class="card"><div class="sec-label">Status</div><div class="status-select">
+    <button class="status-opt ${job.status==='Active'?'sel-active':''}" onclick="setStatus('${id}','Active')">Active</button>
+    <button class="status-opt ${job.status==='Completed'?'sel-completed':''}" onclick="setStatus('${id}','Completed')">Completed</button>
+    <button class="status-opt ${job.status==='Rejected'?'sel-rejected':''}" onclick="setStatus('${id}','Rejected')">Rejected</button>
+  </div></div>`;
+
+  // Estimate details
+  if(E?.sides?.length){
+    E.sides.forEach(side=>{
+      html+=`<div class="card"><div class="sec-label">${side.label} side</div>
+        <table class="paint-table"><thead><tr><th>Surface</th><th>Paint/Primer</th><th>Sheen</th><th>Color</th><th>Coats</th></tr></thead><tbody>`;
+      (side.surfaces||[]).forEach(sf=>{
+        const nm=sf.qty&&parseInt(sf.qty)>1?`${sf.name} × ${sf.qty}`:sf.name;
+        html+=`<tr><td>${nm}</td><td>${sf.paint||'—'}</td><td>${sf.sheen||'—'}</td><td>${sf.color||'—'}</td><td>${sf.pc}/${sf.prc}</td></tr>`;
+      });
+      html+=`</tbody></table></div>`;
+    });
+  }
+
+  // Photos
+  const photoSlots=[];
+  // Only show slots for sides that are in this estimate
+  if(E?.sides) E.sides.forEach(s=>photoSlots.push({key:s.label,label:`${s.label} side`,custom:true}));
+  // Always show additional slots
+  photoSlots.push({key:'add1',label:'Additional 1',custom:true},{key:'add2',label:'Additional 2',custom:true},{key:'add3',label:'Additional 3',custom:true});
+  html+=`<div class="card"><div class="sec-label">Project photos</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Tap photo to change · Tap label to edit · × to remove</p>
+    <div class="photo-grid">`;
+  photoSlots.forEach(slot=>{
+    const photo=job.photos?.[slot.key];
+    const savedLabel = job.photoLabels?.[slot.key] || slot.label;
+    if(photo){
+      html+=`<div class="photo-slot filled" style="position:relative">
+        <img src="${photo}" alt="${savedLabel}" onclick="addPhotoToSlot('${id}','${slot.key}')">
+        <button onclick="event.stopPropagation();removePhoto('${id}','${slot.key}')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">×</button>
+        <input type="text" value="${savedLabel}"
+          style="width:100%;font-size:11px;font-weight:600;padding:5px 6px;border:none;border-top:0.5px solid var(--border);background:white;text-align:center;font-family:inherit;color:#1a1a1a;"
+          onchange="savePhotoLabel('${id}','${slot.key}',this.value)"
+          onclick="event.stopPropagation()">
+      </div>`;
+    } else {
+      html+=`<div class="photo-slot">
+        <div onclick="addPhotoToSlot('${id}','${slot.key}')" style="padding:14px 8px">
+          <div class="photo-icon">📷</div>
+        </div>
+        <input type="text" value="${savedLabel}"
+          placeholder="Label..."
+          style="width:100%;font-size:11px;font-weight:600;padding:5px 6px;border:none;border-top:0.5px solid var(--border);background:white;text-align:center;font-family:inherit;color:#888;"
+          onchange="savePhotoLabel('${id}','${slot.key}',this.value)"
+          onclick="event.stopPropagation()">
+      </div>`;
+    }
+  });
+  html+=`</div></div>`;
+
+  // Project details
+  html+=`<div class="card"><div class="sec-label">Project details</div>
+    <div class="field"><label>Estimated days to complete</label><input type="text" id="jDays" placeholder="e.g. 10–12 days" value="${job.days||''}"></div>
+    <div class="field"><label>Internal notes</label><textarea id="jNotes" rows="2" placeholder="Notes...">${job.notes||''}</textarea></div>
+  </div>`;
+
+  // Cost calculator
+  const porta=E?.portaPotty||false;
+  html+=`<div class="card"><div class="sec-label">Cost summary</div>
+    <div class="cost-input-wrap"><label>Enter subtotal (labor & materials)</label>
+      <input type="number" class="cost-input" id="jSubtotal" placeholder="0.00" value="${job.subtotal||''}" oninput="calcCost()">
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <label style="font-size:11px;color:var(--muted);font-weight:500">Sales Tax %</label>
+      <input type="number" id="jTaxRate" value="${job.taxRate||8.375}" step="0.001" min="0" max="20"
+        style="width:80px;font-size:13px;padding:6px 8px;border:0.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit"
+        oninput="calcCost()">
+      <span style="font-size:12px;color:var(--muted)">%</span>
+    </div>
+    <table class="cost-table">
+      <tr><td class="lbl">Subtotal</td><td class="val" id="cv-sub">—</td></tr>
+      ${porta?'<tr><td class="lbl">Porta Potty</td><td class="val">$200.00</td></tr>':''}
+      <tr><td class="lbl">Sales Tax (<span id="cv-tax-pct">${job.taxRate||8.375}%</span>)</td><td class="val" id="cv-tax">—</td></tr>
+      <tr class="total-row"><td>Total</td><td class="val" id="cv-total">—</td></tr>
+      <tr class="deposit-row"><td class="lbl">Deposit due (1/3)</td><td class="val" id="cv-dep">—</td></tr>
+      <tr><td class="lbl">Balance due</td><td class="val" id="cv-bal">—</td></tr>
+    </table>
+  </div>`;
+
+  // Actions
+  html+=`<button class="btn-primary" onclick="saveJob('${id}')">💾 Save changes</button>
+    <button class="btn-secondary" id="genBtn" onclick="generateProposal('${id}')">📄 Generate & download proposal</button>
+    <div id="jobStatus" class="sbar" style="display:none"></div>
+    ${job.driveFileId?`<a href="https://drive.google.com/file/d/${job.driveFileId}/view" target="_blank" class="btn-ghost">☁ Open in Google Drive</a>`:''}
+    ${job.proposalGenerated?`<button class="btn-ghost" onclick="redownloadProposal('${id}')">⬇ Re-download proposal</button>`:''}
+    <button class="btn-ghost" onclick="editEstimate('${id}')">✏️ Edit estimate</button>
+    <button class="btn-ghost" onclick="duplicateJob('${id}')">⧉ Duplicate estimate</button>
+    <button class="btn-danger" onclick="deleteJob('${id}')">🗑 Delete job</button>`;
+
+  document.getElementById('jobModalBody').innerHTML=html;
+  document.getElementById('jobModal').classList.add('on');
+  if(job.subtotal) calcCost();
+}
+function closeJob(){document.getElementById('jobModal').classList.remove('on');currentJobId=null;renderMain();}
+
+// ── STATUS ──
+function setStatus(id,status){
+  const jobs=getJobs(),job=jobs.find(j=>j.id===id),old=job?.status;
+  if(job){job.status=status;saveJobs(jobs);}
+  document.querySelectorAll('.status-opt').forEach(el=>{
+    el.className='status-opt';
+    const t=el.textContent.trim();
+    if(t===status){
+      if(status==='Active') el.classList.add('sel-active');
+      else if(status==='Completed') el.classList.add('sel-completed');
+      else el.classList.add('sel-rejected');
+    }
+  });
+  if(job?.driveFileId&&old!==status) moveDriveFile(job.driveFileId,old,status,job.estimate?.client?.name);
+}
+
+function moveDriveFile(fileId,oldStatus,newStatus,clientName){
+  fetch(SERVER+'/move',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fileId,oldStatus,newStatus,clientName})}).catch(e=>console.error('Move error:',e));
+}
+
+// ── PHOTO LABELS ──
+function savePhotoLabel(jobId, slotKey, label){
+  const jobs=getJobs(), job=jobs.find(j=>j.id===jobId);
+  if(job){ if(!job.photoLabels) job.photoLabels={}; job.photoLabels[slotKey]=label; saveJobs(jobs); }
+}
+
+function removePhoto(jobId, slotKey){
+  const jobs=getJobs(), job=jobs.find(j=>j.id===jobId);
+  if(job && job.photos){ delete job.photos[slotKey]; saveJobs(jobs); openJob(jobId); }
+}
+
+// ── PHOTOS ──
+function addPhotoToSlot(jobId,slotKey){currentPhotoSlot={jobId,slotKey};document.getElementById('photoInput').click();}
+function handlePhoto(input){
+  if(!input.files[0]||!currentPhotoSlot)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      // Compress aggressively to avoid localStorage quota
+      const MAX=600,canvas=document.createElement('canvas');
+      let w=img.width,h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      // Try progressively lower quality until it fits
+      let compressed,quality=0.6;
+      do {
+        compressed=canvas.toDataURL('image/jpeg',quality);
+        quality-=0.1;
+      } while(compressed.length>300000 && quality>0.2);
+      const {jobId,slotKey}=currentPhotoSlot;
+      try{
+        const jobs=getJobs(),job=jobs.find(j=>j.id===jobId);
+        if(job){if(!job.photos)job.photos={};job.photos[slotKey]=compressed;saveJobs(jobs);openJob(jobId);}
+      }catch(err){
+        alert('Storage full. Try deleting some photos from other jobs first.');
+      }
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(input.files[0]);
+  input.value='';
+}
+
+// ── COST CALC ──
+function fmt(n){return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function calcCost(){
+  const el=document.getElementById('jSubtotal');if(!el)return;
+  const sub=parseFloat(el.value)||0;
+  const taxEl=document.getElementById('jTaxRate');
+  const taxRate=(parseFloat(taxEl?.value)||8.375)/100;
+  const jobs=getJobs(),job=jobs.find(j=>j.id===currentJobId);
+  const porta=job?.estimate?.portaPotty?200:0;
+  const taxable=sub+porta,tax=taxable*taxRate,total=taxable+tax,dep=total/3,bal=total-dep;
+  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=fmt(v);};
+  s('cv-sub',sub);s('cv-tax',tax);s('cv-total',total);s('cv-dep',dep);s('cv-bal',bal);
+  const pctEl=document.getElementById('cv-tax-pct');
+  if(pctEl) pctEl.textContent=`${parseFloat(taxEl?.value)||8.375}%`;
+}
+
+// ── SAVE JOB ──
+function saveJob(id){
+  const jobs=getJobs(),job=jobs.find(j=>j.id===id);if(!job)return;
+  job.days=document.getElementById('jDays')?.value||'';
+  job.notes=document.getElementById('jNotes')?.value||'';
+  job.subtotal=document.getElementById('jSubtotal')?.value||'';
+  job.taxRate=parseFloat(document.getElementById('jTaxRate')?.value)||8.375;
+  saveJobs(jobs);
+  const s=document.getElementById('jobStatus');
+  s.style.display='block';s.className='sbar success';s.textContent='✓ Changes saved';
+  setTimeout(()=>s.style.display='none',2000);
+}
+
+// ── GENERATE PROPOSAL ──
+async function generateProposal(id){
+  const btn=document.getElementById('genBtn'),s=document.getElementById('jobStatus');
+  btn.disabled=true;btn.textContent='⏳ Building proposal...';
+  s.style.display='block';s.className='sbar loading';s.textContent='Sending to server...';
+  try{
+    saveJob(id);
+    const jobs=getJobs(),job=jobs.find(j=>j.id===id);if(!job)throw new Error('Job not found');
+    const E=job.estimate,sub=parseFloat(job.subtotal)||0;
+    const taxRate=(job.taxRate||8.375)/100;
+    const porta=E?.portaPotty?200:0,taxable=sub+porta,tax=taxable*taxRate,total=taxable+tax,dep=total/3,bal=total-dep;
+    const payload={
+      ...E,
+      duration:job.days||'To be determined',
+      photos:job.photos||{},
+      photoLabels:job.photoLabels||{},
+      subtotal:fmt(sub),portaPottyAmt:'$200.00',salesTaxPct:(job.taxRate||8.375)+'%',
+      salesTaxAmt:fmt(tax),total:fmt(total),deposit:fmt(dep),balance:fmt(bal),
+      jobStatus:job.status||'Active',driveFileId:job.driveFileId||null
+    };
+    const resp=await fetch(SERVER+'/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!resp.ok)throw new Error('Server error '+resp.status);
+    const driveFileId=resp.headers.get('X-Drive-File-Id');
+    if(driveFileId) job.driveFileId=driveFileId;
+    const blob=await resp.blob();
+    const clientName=E?.client?.name?.replace(/\s+/g,'_')||'Client';
+    const date=E?.dateIssued?.replace(/\//g,'-')||'draft';
+    const fileName=`LUCAZProposal_${clientName}_${date}.docx`;
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=fileName;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+    job.proposalGenerated=true;job.proposalFileName=fileName;job.proposalPayload=payload;
+    saveJobs(jobs);
+    s.className='sbar success';
+    s.textContent=driveFileId?`✓ Downloaded + saved to Drive → Proposals/Active/${E?.client?.name}`:'✓ Proposal downloaded';
+    setTimeout(()=>openJob(id),800);
+  }catch(e){s.className='sbar error';s.textContent='Error: '+e.message;}
+  btn.disabled=false;btn.textContent='📄 Generate & download proposal';
+}
+
+// ── RE-DOWNLOAD ──
+async function redownloadProposal(id){
+  const jobs=getJobs(),job=jobs.find(j=>j.id===id);
+  if(!job?.proposalPayload){generateProposal(id);return;}
+  const s=document.getElementById('jobStatus');
+  s.style.display='block';s.className='sbar loading';s.textContent='Re-downloading...';
+  try{
+    const resp=await fetch(SERVER+'/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(job.proposalPayload)});
+    if(!resp.ok)throw new Error('Server error');
+    const blob=await resp.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=job.proposalFileName||'LUCAZProposal.docx';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+    s.className='sbar success';s.textContent='✓ Re-downloaded successfully';
+  }catch(e){s.className='sbar error';s.textContent='Error: '+e.message;}
+}
+
+// ── EDIT & DUPLICATE ──
+function editEstimate(id){sessionStorage.setItem('editJobId',id);window.location.href='estimate.html';}
+function duplicateJob(id){
+  const jobs=getJobs(),job=jobs.find(j=>j.id===id);if(!job)return;
+  let maxNum=146;jobs.forEach(j=>{const n=parseInt(j.estimate?.proposalNum);if(!isNaN(n)&&n>maxNum)maxNum=n;});
+  const newId='est_'+Date.now();
+  const dup={...JSON.parse(JSON.stringify(job)),id:newId,createdAt:new Date().toISOString(),status:'Active',proposalGenerated:false,photos:{},subtotal:'',days:'',notes:'',followUp:false,driveFileId:null,
+    estimate:{...JSON.parse(JSON.stringify(job.estimate)),proposalNum:String(maxNum+1).padStart(4,'0'),dateIssued:(()=>{const d=new Date();return `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}-${d.getFullYear()}`})(),client:{...job.estimate.client,name:job.estimate.client.name+' (copy)'}}};
+  jobs.unshift(dup);saveJobs(jobs);closeJob();
+  setTimeout(()=>openJob(newId),200);
+}
+function deleteJob(id){if(!confirm('Delete this job?'))return;saveJobs(getJobs().filter(j=>j.id!==id));closeJob();}
+
+// ── CLIENTS ──
+function renderClients(){
+  const jobs=getJobs(),clients=getClients();
+  const map={};
+  clients.forEach(c=>{const key=(c.phone||'').replace(/\D/g,'')||c.name.toLowerCase();map[key]={...c,jobs:[]};});
+  jobs.forEach(job=>{
+    const name=job.estimate?.client?.name,phone=(job.estimate?.client?.phone||'').replace(/\D/g,'');
+    if(!name)return;
+    const key=phone||name.toLowerCase().trim();
+    if(!map[key])map[key]={id:'cli_'+Date.now(),name,phone:job.estimate.client.phone,email:job.estimate.client.email,street:job.estimate.client.street,city:job.estimate.client.city,state:job.estimate.client.state,zip:job.estimate.client.zip,jobs:[]};
+    map[key].jobs.push(job);
+  });
+  const list=Object.values(map);window._clients=list;
+  let html=`<input class="search-bar" type="text" placeholder="🔍 Search clients..." oninput="searchClients(this.value)">`;
+  if(!list.length){html+=`<div class="empty"><div class="empty-icon">👥</div><h3>No clients yet</h3><p>Save an estimate or add a client manually</p></div>`;}
+  else list.forEach((c,i)=>{
+    const jc=c.jobs?.length||0,active=c.jobs?.filter(j=>j.status==='Active').length||0;
+    html+=`<div class="client-card" id="cc-${i}" onclick="openClient(${i})">
+      <div class="client-name">${c.name}</div>
+      <div class="client-sub">${c.phone||''}${c.email?' · '+c.email:''}</div>
+      <div class="client-sub">${c.street||''}${c.city?', '+c.city:''} ${c.state||''}</div>
+      <div class="client-jobs-count">${jc} job${jc!==1?'s':''}${active?' · '+active+' active':''}</div>
+    </div>`;
+  });
+  document.getElementById('mainContent').innerHTML=html;
+}
+function searchClients(q){const query=q.toLowerCase();document.querySelectorAll('.client-card').forEach((el,i)=>{const c=window._clients[i];el.style.display=(c.name?.toLowerCase().includes(query)||c.phone?.includes(query)||c.email?.toLowerCase().includes(query))?'block':'none';});}
+function openClient(i){
+  const c=window._clients[i];
+  document.getElementById('clientModalTitle').textContent=c.name;
+  let html=`<div class="card"><div class="sec-label">Contact info</div>
+    <div class="detail-row"><span class="lbl">Phone</span><span class="val">${c.phone||'—'}</span></div>
+    <div class="detail-row"><span class="lbl">Email</span><span class="val">${c.email||'—'}</span></div>
+    <div class="detail-row"><span class="lbl">Address</span><span class="val">${[c.street,c.city,c.state,c.zip].filter(Boolean).join(', ')||'—'}</span></div>
+    ${c.notes?`<div class="detail-row"><span class="lbl">Notes</span><span class="val">${c.notes}</span></div>`:''}
+  </div>`;
+  if(c.jobs?.length){
+    html+=`<div class="sec-label" style="margin-top:4px">Job history</div>`;
+    c.jobs.forEach(job=>{
+      const date=new Date(job.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const statusColor=job.status==='Active'?'var(--green)':job.status==='Completed'?'var(--blue)':'var(--muted)';
+      html+=`<div class="job-card" onclick="closeClient();openJob('${job.id}')">
+        <div class="job-card-top"><div class="job-name" style="font-size:13px">${job.estimate?.subject||'Estimate'}</div><div style="font-size:11px;color:${statusColor};font-weight:600">${job.status}</div></div>
+        <div class="job-date">${date}</div>
+        ${job.proposalGenerated?'<div style="font-size:11px;color:var(--green);margin-top:4px">✓ Proposal generated</div>':''}
+      </div>`;
+    });
+  }
+  // New estimate button
+  html+=`<button class="btn-primary" style="margin-top:8px" onclick="newEstimateFromClient(${i})">+ New estimate for ${c.name}</button>`;
+  html+=`<button class="btn-danger" onclick="deleteClient(${i})">🗑 Delete client</button>`;
+  document.getElementById('clientModalBody').innerHTML=html;
+  document.getElementById('clientModal').classList.add('on');
+}
+function openClientFromJob(jobId){
+  const job=getJobs().find(j=>j.id===jobId);if(!job)return;
+  renderClients();
+  const phone=(job.estimate?.client?.phone||'').replace(/\D/g,''),name=job.estimate?.client?.name||'';
+  const idx=(window._clients||[]).findIndex(c=>(c.phone?.replace(/\D/g,'')||'')===(phone||'x')||(c.name?.toLowerCase()===name.toLowerCase()));
+  if(idx>=0)openClient(idx);
+}
+
+function newEstimateFromClient(i){
+  const c=window._clients[i];
+  if(!c)return;
+  // Store client info for estimate app to pre-fill
+  sessionStorage.setItem('prefillClient', JSON.stringify({
+    name: c.name,
+    street: c.street||'',
+    city: c.city||'',
+    state: c.state||'',
+    zip: c.zip||'',
+    phone: c.phone||'',
+    email: c.email||''
+  }));
+  window.location.href='estimate.html';
+}
+
+function deleteClient(i){
+  const c=window._clients[i];
+  if(!c)return;
+  if(!confirm(`Delete ${c.name} and all their jobs?`))return;
+  const jobs=getJobs().filter(j=>j.estimate?.client?.name!==c.name);
+  saveJobs(jobs);
+  const clients=getClients().filter(cl=>cl.name!==c.name);
+  saveClients(clients);
+  closeClient();
+  renderMain();
+}
+
+function closeClient(){document.getElementById('clientModal').classList.remove('on');}
+
+// ── ADD CLIENT ──
+function closeAdd(){document.getElementById('addModal').classList.remove('on');}
+function saveClient(){
+  const name=document.getElementById('ac-name').value.trim();
+  if(!name){alert('Please enter a client name');return;}
+  const jobs=getJobs();
+  let maxNum=146;jobs.forEach(j=>{const n=parseInt(j.estimate?.proposalNum);if(!isNaN(n)&&n>maxNum)maxNum=n;});
+  const client={id:'cli_'+Date.now(),name,street:document.getElementById('ac-street').value,city:document.getElementById('ac-city').value,state:document.getElementById('ac-state').value,zip:document.getElementById('ac-zip').value,phone:document.getElementById('ac-phone').value,email:document.getElementById('ac-email').value,notes:document.getElementById('ac-notes').value,createdAt:new Date().toISOString()};
+  const leadJob={id:'est_'+Date.now(),createdAt:new Date().toISOString(),status:'Active',estimate:{proposalNum:String(maxNum+1).padStart(4,'0'),dateIssued:(()=>{const d=new Date();return `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}-${d.getFullYear()}`})(),subject:'Lead',client:{name:client.name,street:client.street,city:client.city,state:client.state,zip:client.zip,phone:client.phone,email:client.email},powerWash:[],surfacePrep:[],sides:[],carpentry:{enabled:false},portaPotty:false},photos:{},notes:client.notes||'',days:'',subtotal:'',proposalGenerated:false};
+  const clients=getClients();clients.unshift(client);saveClients(clients);
+  jobs.unshift(leadJob);saveJobs(jobs);
+  const s=document.getElementById('acStatus');s.style.display='block';s.className='sbar success';s.textContent=`✓ ${name} saved`;
+  ['ac-name','ac-street','ac-city','ac-state','ac-zip','ac-phone','ac-email','ac-notes'].forEach(id=>document.getElementById(id).value='');
+  setTimeout(()=>{closeAdd();renderMain();s.style.display='none';},1500);
+}
+
+// ── REDIRECT FROM ESTIMATE ──
+function checkRedirect(){
+  const jobId=sessionStorage.getItem('openJobId');
+  if(jobId){sessionStorage.removeItem('openJobId');setTimeout(()=>openJob(jobId),300);}
+}
+
+// ── INIT ──
+renderMain();
+checkRedirect();
+fetch(SERVER+'/health').catch(()=>{});
+</script>
+</body>
+</html>
